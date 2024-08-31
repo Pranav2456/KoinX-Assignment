@@ -10,12 +10,35 @@ export const getTransactions = async (
 ): Promise<void> => {
   try {
     const { address } = req.params;
+    const { page = 1, limit = 100 } = req.query;
 
-    const transactions = await etherscanService.fetchTransactions(address);
+    // Validate Ethereum address
+    if (!/^0x[a-fA-F0-9]{40}$/.test(address)) {
+      res.status(400).json({ error: "Invalid Ethereum address" });
+      return;
+    }
 
-    await Transaction.insertMany(transactions, { ordered: false });
+    const skip = (Number(page) - 1) * Number(limit);
 
-    res.json(transactions);
+    let transactions = await Transaction.find({ address })
+      .skip(skip)
+      .limit(Number(limit))
+      .sort({ blockNumber: -1 });
+
+    if (transactions.length === 0) {
+      const newTransactions = await etherscanService.fetchTransactions(address);
+      await Transaction.insertMany(newTransactions, { ordered: false });
+      transactions = newTransactions.slice(skip, skip + Number(limit));
+    }
+
+    const total = await Transaction.countDocuments({ address });
+
+    res.json({
+      transactions,
+      page: Number(page),
+      limit: Number(limit),
+      total,
+    });
   } catch (error) {
     console.error("Error fetching transactions:", error);
     res.status(500).json({ error: "Internal server error" });
@@ -29,20 +52,29 @@ export const getUserExpenses = async (
   try {
     const { address } = req.params;
 
-    const transactions = await Transaction.find({ address });
+    // Validate Ethereum address
+    if (!/^0x[a-fA-F0-9]{40}$/.test(address)) {
+      res.status(400).json({ error: "Invalid Ethereum address" });
+      return;
+    }
 
-    const totalExpenses = transactions.reduce(
-      (total: number, tx: ITransaction) => {
-        return total + (tx.gasUsed * parseInt(tx.gasPrice)) / 1e18;
-      },
-      0
-    );
+    const [expenseResult] = await Transaction.aggregate([
+      { $match: { address } },
+      {
+        $group: {
+          _id: null,
+          totalExpenses: {
+            $sum: { $divide: [{ $multiply: ["$gasUsed", { $toDouble: "$gasPrice" }] }, 1e18] }
+          }
+        }
+      }
+    ]);
 
     const latestEthPrice = await EthPrice.findOne().sort({ timestamp: -1 });
 
     res.json({
       address,
-      totalExpenses,
+      totalExpenses: expenseResult ? expenseResult.totalExpenses : 0,
       currentEthPrice: latestEthPrice ? latestEthPrice.price : null,
     });
   } catch (error) {
