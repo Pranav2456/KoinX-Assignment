@@ -1,0 +1,28 @@
+{
+	"info": {
+		"_postman_id": "015b91b4-20e7-4c3a-8086-7f3b044cc739",
+		"name": "KoinX-Take-Home-Assignment",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "31843534"
+	},
+	"item": [
+		{
+			"name": "Fetch Transaction Of User By The Address",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": "http://localhost:5000/api/transactions/0xce94e5621a5f7068253c42558c147480f38b5e0d"
+			},
+			"response": []
+		},
+		{
+			"name": "Fetch Total Expenses Of a Address and price of ETH",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": "http://localhost:5000/api/expenses/0xce94e5621a5f7068253c42558c147480f38b5e0d"
+			},
+			"response": []
+		}
+	]
+}

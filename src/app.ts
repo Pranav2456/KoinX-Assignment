@@ -2,6 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import cron from "node-cron";
 import apiRoutes from "./routes/api.routes";
+import router from "./routes/api.routes";
 import { fetchAndStoreEthPrice } from "./controllers/ethprice.controllers";
 import connectDatabase from "./config/database.config";
 
@@ -11,6 +12,7 @@ const app = express();
 
 app.use(express.json());
 app.use("/api", apiRoutes);
+app.use(router);
 
 cron.schedule("*/10 * * * *", fetchAndStoreEthPrice);
 
