@@ -1,9 +1,10 @@
-import express from "express";
+import { Router } from "express";
 import * as transactionController from "../controllers/transaction.controllers";
 import { errorHandler, healthCheck, notFound } from "../utils/errorHandler";
 
-const router = express.Router();
+const router = Router();
 
+router.get("/", healthCheck);
 router.get("/transactions/:address", transactionController.getTransactions);
 router.get("/expenses/:address", transactionController.getUserExpenses);
 
