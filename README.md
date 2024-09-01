@@ -86,7 +86,7 @@ This backend application is designed to track Ethereum transactions and provide 
    - Description: Calculates total expenses (gas fees) for a given Ethereum address
 
 3. Health Check
-   - Endpoint: `GET /health`
+   - Endpoint: `GET /`
    - Description: Returns the status of the server
 
 ## Automated Tasks
